@@ -96,3 +96,6 @@ Pipfile.lock
 
 # pyenv
 .python-version
+
+#custom
+assets/
