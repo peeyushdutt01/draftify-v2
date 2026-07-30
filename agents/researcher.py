@@ -18,7 +18,7 @@ async def researcher(state: State):
     articles = await scrape_many(selected)
 
     return {
-        "articles": articles
+        "scraped_articles": articles
     }
 
 
