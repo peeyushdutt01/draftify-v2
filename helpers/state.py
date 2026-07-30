@@ -62,3 +62,6 @@ class State(BaseModel):
     exports: dict[str, str] = Field(default_factory=dict)
     current_step: str = ""
     errors: list[str] = Field(default_factory=list)
+
+class ResearchSelection(BaseModel):
+    selected: list[int]
