@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 class Article(BaseModel):
     title: str
-    url: str
+    url: HttpUrl
     content: str
 
 class Plan(BaseModel):

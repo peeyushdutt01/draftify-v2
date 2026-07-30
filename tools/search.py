@@ -135,16 +135,18 @@ def _search_social(query:str)->list[SearchResult]:
 
 async def main():
     response = await search(
-        queries=["Gemma 4"],
-        sources=[SearchSource.SOCIAL],
+        queries=["indian semiconductor advancements in 2026"],
+        sources=[SearchSource.WEB],
     )
 
-    for result in response.results:
-        print(result.title)
-        print(result.url)
-        print(result.source)
-        print(result.snippet)
-        print()
+    print(response)
+    
+    # for result in response.results:
+    #     # print(result.title)
+    #     print(result.url)
+    #     # print(result.source)
+    #     # print(result.snippet)
+    #     print()
 
 
 if __name__ == "__main__":

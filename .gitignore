@@ -98,4 +98,5 @@ Pipfile.lock
 .python-version
 
 #custom
+test.py
 assets/
