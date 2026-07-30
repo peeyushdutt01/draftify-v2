@@ -1,4 +1,4 @@
-from langchain_ollama  import ChatOllama
+from langchain_ollama import ChatOllama
 
 
 def get_llm(**kwargs):

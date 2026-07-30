@@ -1,9 +1,12 @@
-from pydantic import BaseModel ,Field,HttpUrl
-from typing import Any, Optional, Annotated, Sequence
+from collections.abc import Sequence
+from datetime import datetime
+from enum import Enum
+from typing import Annotated
+
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
-from enum import Enum
-from datetime import datetime
+from pydantic import BaseModel, Field, HttpUrl
+
 
 class Article(BaseModel):
     title: str

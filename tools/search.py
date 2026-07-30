@@ -1,6 +1,14 @@
-from ddgs import DDGS
-from helpers.state import SearchSource, SearchResponse, SearchResult, SearchProvider
+import asyncio
+import os
+
 import arxiv
+import praw
+from ddgs import DDGS
+from dotenv import load_dotenv
+
+from helpers.state import SearchProvider, SearchResponse, SearchResult, SearchSource
+
+load_dotenv()
 
 async def search(
     queries: list[str],
@@ -28,7 +36,7 @@ async def search(
 
         if SearchSource.SOCIAL in sources:
             results.extend(
-                await _search_social(query)
+                _search_social(query)
             )
 
     return SearchResponse(results=results)
@@ -102,19 +110,33 @@ def _search_research(query: str) -> list[SearchResult]:
 
     return results
 
-async def _search_social()->list[SearchResult]:
-    return []
+def _search_social(query:str)->list[SearchResult]:
+    results : list[SearchResult] = []
 
+    reddit = praw.Reddit(
+        client_id=os.getenv("REDDIT_CLIENT_ID"),
+        client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
+        user_agent=os.getenv("REDDIT_USER_AGENT"),
+    )
+    for post in reddit.subreddit("all").search(query,limit = 10):
+        results.append(
+            SearchResult(
+                title = post.title,
+                url = post.url, 
+                snippet = post.selftext, 
+                source = SearchSource.SOCIAL, 
+                provider = SearchProvider.REDDIT, 
+                query = query,
+            )
+        )
 
+    return results
 
-        
-
-import asyncio
 
 async def main():
     response = await search(
         queries=["Gemma 4"],
-        sources=[SearchSource.RESEARCH],
+        sources=[SearchSource.SOCIAL],
     )
 
     for result in response.results:
