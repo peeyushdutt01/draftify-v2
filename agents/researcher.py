@@ -1,26 +1,54 @@
-from helpers.state import State, SearchResult, ResearchSelection
-from tools.scraper import  scrape_many
-from langchain_core.messages import HumanMessage, SystemMessage
-from helpers.llm import get_llm
-from dotenv import load_dotenv
-from prompts.researcher import RESEARCHER_PROMPT
 import os
+
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage, SystemMessage
+from agents.planner import planner
+from helpers.llm import get_llm
+from helpers.state import ResearchSelection, SearchResult, State, SearchRequest
+from prompts.researcher import RESEARCHER_PROMPT
+from prompts.search import SEARCH_PROMPT
+from tools.scraper import scrape_many
+from tools.search import search
+import asyncio
 
 load_dotenv()
 
 async def researcher(state: State):
 
+    search_llm = (
+        get_llm(
+            model=os.getenv("RESEARCHER_MODEL"),
+            temperature=0.1,
+        )
+        .with_structured_output(SearchRequest)
+    )
+
+    search_request = await search_llm.ainvoke(
+        [
+            SystemMessage(content=SEARCH_PROMPT),
+            HumanMessage(content=state.user_request),
+        ]
+    )
+
+    search_response = await search(
+        queries=search_request.query,
+        sources=search_request.sources,
+    )
+
+
     selected = await _select_sources(
         state.user_request,
-        state.search_results,
+        search_response.results,
     )
 
     articles = await scrape_many(selected)
 
     return {
-        "scraped_articles": articles
+        "search_request": search_request,
+        "search_results": search_response.results,
+        "scraped_articles": articles,
+        "current_step": "research_completed",
     }
-
 
 
 async def _select_sources(

@@ -49,19 +49,35 @@ class SearchResult(BaseModel):
 class SearchResponse(BaseModel):
     results : list[SearchResult]
 
+class SearchRequest(BaseModel):
+    query : list[str]
+    sources : list[SearchSource]
+
+class ResearchSelection(BaseModel):
+    selected: list[int]
+
+class Chunk(BaseModel):
+    article_index : int
+    chunk_index : int
+    title : str
+    url : HttpUrl
+    content : str
+
+class ChunkSelection(BaseModel):
+    selected: list[int] = Field(
+        description="Indices of the selected chunks."
+    )
+
 class State(BaseModel):
     messages: Annotated[Sequence[BaseMessage], add_messages] = Field(default_factory=list)
     user_request: str = ""
     plan: Plan | None = None
     search_results: list[SearchResult] = Field(default_factory=list)
     scraped_articles: list[Article] = Field(default_factory=list)
-    ranked_articles: list[Article] = Field(default_factory=list)
+    ranked_articles: list[Chunk] = Field(default_factory=list)
     draft_article: str = ""
     review_comments: list[str] = Field(default_factory=list)
     review_passed: bool = False
     exports: dict[str, str] = Field(default_factory=dict)
     current_step: str = ""
     errors: list[str] = Field(default_factory=list)
-
-class ResearchSelection(BaseModel):
-    selected: list[int]

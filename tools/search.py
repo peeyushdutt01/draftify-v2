@@ -48,7 +48,7 @@ def _search_web(query)->list[SearchResult]:
     with DDGS() as ddgs:
         response = ddgs.text(
             query,
-            max_results = 10,
+            max_results = 2,
         )
         for item in response:
             results.append(SearchResult(
@@ -68,7 +68,7 @@ def _search_news(query: str) -> list[SearchResult]:
     with DDGS() as ddgs:
         response = ddgs.news(
             query,
-            max_results=10,
+            max_results=2,
         )
 
         for item in response:
@@ -92,7 +92,7 @@ def _search_research(query: str) -> list[SearchResult]:
 
     search = arxiv.Search(
         query=query,
-        max_results=10,
+        max_results=2,
         sort_by=arxiv.SortCriterion.Relevance,
     )
 
@@ -118,7 +118,7 @@ def _search_social(query:str)->list[SearchResult]:
         client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
         user_agent=os.getenv("REDDIT_USER_AGENT"),
     )
-    for post in reddit.subreddit("all").search(query,limit = 10):
+    for post in reddit.subreddit("all").search(query,limit = 2):
         results.append(
             SearchResult(
                 title = post.title,
@@ -133,21 +133,21 @@ def _search_social(query:str)->list[SearchResult]:
     return results
 
 
-async def main():
-    response = await search(
-        queries=["indian semiconductor advancements in 2026"],
-        sources=[SearchSource.WEB],
-    )
+# async def main():
+#     response = await search(
+#         queries=["indian semiconductor advancements in 2026"],
+#         sources=[SearchSource.WEB],
+#     )
 
-    print(response)
+#     print(response)
     
-    # for result in response.results:
-    #     # print(result.title)
-    #     print(result.url)
-    #     # print(result.source)
-    #     # print(result.snippet)
-    #     print()
+#     # for result in response.results:
+#     #     # print(result.title)
+#     #     print(result.url)
+#     #     # print(result.source)
+#     #     # print(result.snippet)
+#     #     print()
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())

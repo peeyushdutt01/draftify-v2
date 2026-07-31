@@ -8,7 +8,7 @@ You will receive:
    - Index
    - Title
    - URL
-   - Snippet
+   - Snippet (if available)
    - Source
 
 Your task is to identify which search results are worth reading.

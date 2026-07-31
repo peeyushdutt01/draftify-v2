@@ -4,7 +4,7 @@ import logging
 import trafilatura
 from playwright.async_api import async_playwright
 
-from helpers.state import Article, SearchProvider, SearchResult, SearchSource
+from helpers.state import Article, SearchResult
 
 logger = logging.getLogger(__name__)
 
