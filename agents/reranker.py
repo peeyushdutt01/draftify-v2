@@ -1,12 +1,30 @@
+import asyncio
 import os
 import re
 
-from dotenv import load_dotenv
+import numpy as np
+from sentence_transformers import CrossEncoder, SentenceTransformer
 
-from helpers.llm import get_llm
-from helpers.state import Article, Chunk, ChunkSelection, State
+from helpers.state import Article, Chunk, State
 
-load_dotenv()
+_CROSS_ENCODER_MODEL = os.getenv("RERANKER_CROSS_ENCODER_MODEL", "BAAI/bge-reranker-v2-m3")
+_EMBEDDING_MODEL = os.getenv("RERANKER_EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
+
+_cross_encoder: CrossEncoder | None = None
+_embedder: SentenceTransformer | None = None
+
+
+def _get_cross_encoder() -> CrossEncoder:
+    global _cross_encoder
+    if _cross_encoder is None:
+        _cross_encoder = CrossEncoder(_CROSS_ENCODER_MODEL)
+    return _cross_encoder
+
+def _get_embedder() -> SentenceTransformer:
+    global _embedder
+    if _embedder is None:
+        _embedder = SentenceTransformer(_EMBEDDING_MODEL)
+    return _embedder
 
 async def reranker(state: State):
 
@@ -20,7 +38,6 @@ async def reranker(state: State):
     return {
         "ranked_articles": selected,
     }
-
 
 def _chunk_articles(
     articles: list[Article],
@@ -138,58 +155,41 @@ async def _select_chunks(
     query: str,
     chunks: list[Chunk],
     max_chunks: int = 10,
+    redundancy_threshold: float = 0.88,
+    lambda_relevance: float = 0.7,
 ) -> list[Chunk]:
+
+    if not chunks:
+        return []
 
     if len(chunks) <= max_chunks:
         return chunks
 
-    formatted_chunks = []
+    cross_encoder = _get_cross_encoder()
+    embedder = _get_embedder()
 
-    for i, chunk in enumerate(chunks):
-        formatted_chunks.append(
-            f"""
-Chunk {i}
+    pairs = [(query, chunk.content) for chunk in chunks]
+    relevance_scores = await asyncio.to_thread(cross_encoder.predict, pairs)
 
-Title:
-{chunk.title}
-
-Content:
-{chunk.content}
-""".strip()
-                    )
-
-    prompt = f"""
-        You are an expert document reranker.
-
-        Your task is to select the BEST chunks for answering the user's query.
-
-        User Query:
-        {query}
-
-        Rules:
-        - Select AT MOST {max_chunks} chunks.
-        - Choose chunks that directly answer the query.
-        - Remove redundant chunks.
-        - Prefer chunks containing concrete facts, numbers, explanations and examples.
-        - If two chunks contain the same information, keep the better one.
-        - Return ONLY the selected chunk indices.
-
-        Chunks:
-
-        {"\n\n------------------------\n\n".join(formatted_chunks)}
-        """
-    response: ChunkSelection = await (
-        get_llm(
-            model=os.getenv("RERANKER_MODEL"),
-            temperature=0.0
-        )
-        .with_structured_output(ChunkSelection)
-        .ainvoke(prompt)
+    embeddings = await asyncio.to_thread(
+        embedder.encode,
+        [chunk.content for chunk in chunks],
+        normalize_embeddings=True,
     )
 
-    return [
-        chunks[idx]
-        for idx in response.selected
-        if 0 <= idx < len(chunks)
-    ]
+    order = np.argsort(relevance_scores)[::-1]  # highest relevance first
+    selected_indices: list[int] = []
 
+    for idx in order:
+        if len(selected_indices) >= max_chunks:
+            break
+
+        if selected_indices:
+            sims = embeddings[idx] @ embeddings[selected_indices].T
+            max_sim = sims.max()
+            if max_sim >= redundancy_threshold:
+                continue  # too similar to something already picked, skip
+
+        selected_indices.append(idx)
+
+    return [chunks[i] for i in selected_indices]

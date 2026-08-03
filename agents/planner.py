@@ -28,23 +28,3 @@ def planner(state:State):
         "current_step" : "planning_completed"
     }
 
-# state = State(
-#     messages=[
-#         HumanMessage(content="lmao")
-#     ],
-#     user_request="write an article on kaleidoscope.",
-#     plan=None,
-#     fetched_knowledge=[],
-#     ranked_articles=[],
-#     draft_article="",
-#     review_notes=[],
-#     review_passed=False,
-#     exports={},
-#     current_step="",
-#     errors=[]
-# )
-
-# planner(state)
-
-# print(state)
-    

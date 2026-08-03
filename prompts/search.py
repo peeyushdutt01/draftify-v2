@@ -23,8 +23,8 @@ Available sources:
 
 Guidelines:
 
-- Generate between 3 and 6 search queries.
+- Generate between 2 and 4 search queries.
 - Make each query target a different aspect of the topic.
-- Select only the sources that are genuinely useful.
+- Select only the sources that are genuinely useful and needed for the topic.
 - Avoid duplicate queries.
 - Return only the structured output."""

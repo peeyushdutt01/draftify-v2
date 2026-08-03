@@ -72,23 +72,3 @@ async def _fetch_html(url:str) -> str:
 def _content_extractor(html:str) -> str|None:
     return trafilatura.extract(html)
 
-
-
-# async def main():
-
-#     result = SearchResult(
-#         title="Llama 3",
-#         url="https://huggingface.co/blog/llama3",
-#         snippet="",
-#         source=SearchSource.WEB,
-#         provider=SearchProvider.DDGS,
-#         query="llama 3",
-#     )
-
-
-#     article = await scrape(result)
-
-#     print(article)
-
-
-# asyncio.run(main())

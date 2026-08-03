@@ -9,7 +9,7 @@ from helpers.state import State
 async def main():
 
     state = State(
-        user_request="why did indian students went into protest"
+        user_request="gengis khan and how he became the ancestor of most of the today's present humans"
     )
 
     print("=" * 80)
@@ -42,12 +42,14 @@ async def main():
 
     print(f"Selected chunks: {len(state.ranked_articles)}\n")
 
-    for i, chunk in enumerate(state.ranked_articles, start=1):
-        print(f"[{i}] {chunk.title}")
-        print("-" * 60)
-        print(chunk.content[:300])
-        print()
+    from collections import Counter
+    by_article = Counter(c.article_index for c in state.ranked_articles)
+    print("Chunks per article_index:", dict(by_article))
 
+    for i, chunk in enumerate(state.ranked_articles, start=1):
+        print(f"[{i}] article_index={chunk.article_index}  {chunk.title[:70]}")
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
