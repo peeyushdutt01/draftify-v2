@@ -68,6 +68,21 @@ class ChunkSelection(BaseModel):
         description="Indices of the selected chunks."
     )
 
+class Fact(BaseModel):
+    text: str
+    sections: list[str] = Field(default_factory=list)
+    source_title: str
+    source_url: HttpUrl
+    article_index: int
+    chunk_index: int
+
+class ExtractedFact(BaseModel):
+    text: str
+    sections: list[str]
+
+class ChunkFacts(BaseModel):
+    facts: list[ExtractedFact]
+
 class State(BaseModel):
     messages: Annotated[Sequence[BaseMessage], add_messages] = Field(default_factory=list)
     user_request: str = ""
@@ -81,3 +96,4 @@ class State(BaseModel):
     exports: dict[str, str] = Field(default_factory=dict)
     current_step: str = ""
     errors: list[str] = Field(default_factory=list)
+    research_facts: list[Fact] = Field(default_factory=list)

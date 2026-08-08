@@ -87,47 +87,56 @@ def _search_news(query: str) -> list[SearchResult]:
 
 def _search_research(query: str) -> list[SearchResult]:
     results: list[SearchResult] = []
+    try:
 
-    client = arxiv.Client()
+        client = arxiv.Client()
 
-    search = arxiv.Search(
-        query=query,
-        max_results=10,
-        sort_by=arxiv.SortCriterion.Relevance,
-    )
-
-    for paper in client.results(search):
-        results.append(
-            SearchResult(
-                title=paper.title,
-                url=paper.entry_id,
-                snippet=paper.summary,
-                source=SearchSource.RESEARCH,
-                provider=SearchProvider.ARXIV,
-                query=query,
-            )
+        search = arxiv.Search(
+            query=query,
+            max_results=10,
+            sort_by=arxiv.SortCriterion.Relevance,
         )
 
-    return results
+        for paper in client.results(search):
+            results.append(
+                SearchResult(
+                    title=paper.title,
+                    url=paper.entry_id,
+                    snippet=paper.summary,
+                    source=SearchSource.RESEARCH,
+                    provider=SearchProvider.ARXIV,
+                    query=query,
+                )
+            )
+
+        return results
+    except Exception:
+        print("Arxiv Search Fail : ",Exception)
+        return results
 
 def _search_social(query:str)->list[SearchResult]:
     results : list[SearchResult] = []
+    try:
 
-    reddit = praw.Reddit(
-        client_id=os.getenv("REDDIT_CLIENT_ID"),
-        client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-        user_agent=os.getenv("REDDIT_USER_AGENT"),
-    )
-    for post in reddit.subreddit("all").search(query,limit = 10):
-        results.append(
-            SearchResult(
-                title = post.title,
-                url = post.url, 
-                snippet = post.selftext, 
-                source = SearchSource.SOCIAL, 
-                provider = SearchProvider.REDDIT, 
-                query = query,
-            )
+        reddit = praw.Reddit(
+            client_id=os.getenv("REDDIT_CLIENT_ID"),
+            client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
+            user_agent=os.getenv("REDDIT_USER_AGENT"),
         )
+        for post in reddit.subreddit("all").search(query,limit = 10):
+            results.append(
+                SearchResult(
+                    title = post.title,
+                    url = post.url, 
+                    snippet = post.selftext, 
+                    source = SearchSource.SOCIAL, 
+                    provider = SearchProvider.REDDIT, 
+                    query = query,
+                )
+            )
 
-    return results
+        return results
+
+    except Exception:
+        print("Reddit Search Fail : ",Exception)
+        return results
