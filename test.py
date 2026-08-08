@@ -5,6 +5,7 @@ from agents.planner import planner
 from agents.researcher import researcher
 from agents.reranker import reranker
 from agents.extractor import extractor
+from agents.writer import writer
 from helpers.state import State
 
 
@@ -70,12 +71,27 @@ async def main():
 
     by_source = Counter(f.source_title for f in state.research_facts)
     print("Facts per source:", dict(by_source))
-    print()
 
-    for i, fact in enumerate(state.research_facts, start=1):
-        print(f"[{i}] {fact.text}")
-        print(f"    sections={fact.sections}  source={fact.source_title[:50]}")
-        print()
+    print("=" * 80)
+    print("WRITER")
+    print("=" * 80)
+
+    writer_updates = await writer(state)
+    state = state.model_copy(update=writer_updates)
+
+    word_count = len(state.draft_article.split())
+    print(f"Draft article: {word_count} words total\n")
+
+    for section in state.plan.sections:
+        section_facts = [
+            f for f in state.research_facts if section in f.sections
+        ]
+        print(f"- {section}: {len(section_facts)} facts used")
+
+    print()
+    print("-" * 80)
+    print(state.draft_article)
+    print("-" * 80)
 
 
 if __name__ == "__main__":
