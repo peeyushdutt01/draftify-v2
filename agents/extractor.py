@@ -11,11 +11,11 @@ from prompts.extractor import EXTRACTOR_PROMPT
 
 load_dotenv()
 
-_MAX_CONCURRENT_CALLS = 3  # cap concurrency for local model stability
+_MAX_CONCURRENT_CALLS = 3 
 
 
 class ChunkExtraction(BaseModel):
-    chunk_ref: int  # index within THIS batch, not Chunk.chunk_index
+    chunk_ref: int  
     facts: list[ExtractedFact]
 
 

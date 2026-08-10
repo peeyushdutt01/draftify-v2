@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 import arxiv
@@ -110,7 +109,7 @@ def _search_research(query: str) -> list[SearchResult]:
             )
 
         return results
-    except Exception:
+    except Exception:  # noqa: BLE001
         print("Arxiv Search Fail : ",Exception)
         return results
 
@@ -137,6 +136,6 @@ def _search_social(query:str)->list[SearchResult]:
 
         return results
 
-    except Exception:
+    except Exception:  # noqa: BLE001
         print("Reddit Search Fail : ",Exception)
         return results

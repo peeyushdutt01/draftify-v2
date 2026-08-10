@@ -1,10 +1,8 @@
+from collections import defaultdict
 from difflib import SequenceMatcher
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from helpers.state import SearchResult
-
-from collections import defaultdict
-
 
 _TRACKING_PARAMS = {
     "utm_source", "utm_medium", "utm_campaign", "utm_term",
@@ -78,7 +76,7 @@ def rrf_merge(
         by_query[result.query].append((score, result))
 
     fused: list[SearchResult] = []
-    for query, group in by_query.items():
+    for query, group in by_query.items(): # noqa:PERF102
         ranked = sorted(group, key=lambda pair: pair[0], reverse=True)
         fused.extend(result for _, result in ranked[:top_k_per_query])
 
