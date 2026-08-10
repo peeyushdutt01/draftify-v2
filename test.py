@@ -6,13 +6,15 @@ from agents.researcher import researcher
 from agents.reranker import reranker
 from agents.extractor import extractor
 from agents.writer import writer
+from agents.evaluator import evaluator
 from helpers.state import State
+
 
 
 async def main():
 
     state = State(
-        user_request="gengis khan and how he became the ancestor of most of the today's present humans"
+        user_request="prime minister narendra modi"
     )
 
     print("=" * 80)
@@ -92,6 +94,15 @@ async def main():
     print("-" * 80)
     print(state.draft_article)
     print("-" * 80)
+
+    print("=" * 80)
+    print("EVALUATOR")
+    print("=" * 80)
+    evaluator_review = await evaluator(state) 
+    state = state.model_copy(update = evaluator_review)
+
+    print("Evaluator Review : ", state.review_comments)
+    print("Evaluator score : ", state.review_passed)
 
 
 if __name__ == "__main__":

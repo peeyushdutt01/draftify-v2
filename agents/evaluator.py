@@ -17,7 +17,7 @@ async def evaluator(state:State):
     evaluation = await _evaluate_content(
         plan = state.plan, 
         content = state.draft_article)
-    
+    print("Score : ", evaluation.score)
 
     return {
         "review_comments" : evaluation.review_comments,
@@ -28,7 +28,7 @@ async def evaluator(state:State):
 
 async def _evaluate_content(plan:Plan , content: str) -> EvaluationResult:
     llm = get_llm(
-        model = os.getenv("EVALUATION_MODEL"),
+        model = os.getenv("EVALUATOR_MODEL"),
         temperature = 0.0,
     ).with_structured_output(EvaluationResult)
 
