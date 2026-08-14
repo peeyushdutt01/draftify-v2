@@ -7,14 +7,14 @@ from agents.reranker import reranker
 from agents.extractor import extractor
 from agents.writer import writer
 from agents.evaluator import evaluator
+from agents.publisher import publisher
 from helpers.state import State
-
 
 
 async def main():
 
     state = State(
-        user_request="prime minister narendra modi"
+        user_request="Indian Independence Movement and the lesser known leaders"
     )
 
     print("=" * 80)
@@ -90,19 +90,34 @@ async def main():
         ]
         print(f"- {section}: {len(section_facts)} facts used")
 
+    print("=" * 80)
+    print("EVALUATOR")
+    print("=" * 80)
+
+    evaluator_updates = await evaluator(state)
+    state = state.model_copy(update=evaluator_updates)
+
+    print(f"Score: {evaluator_updates.get('score', 'N/A')}")
+    print(f"Passed: {state.review_passed}\n")
+    print("Review comments:")
+    for comment in state.review_comments:
+        print(f"- {comment}")
+
+    print("=" * 80)
+    print("PUBLISHER")
+    print("=" * 80)
+
+    publisher_updates = await publisher(state)
+    state = state.model_copy(update=publisher_updates)
+
+    print(f"Exports: {state.exports}")
+    if state.errors:
+        print(f"Errors: {state.errors}")
+
     print()
     print("-" * 80)
     print(state.draft_article)
     print("-" * 80)
-
-    print("=" * 80)
-    print("EVALUATOR")
-    print("=" * 80)
-    evaluator_review = await evaluator(state) 
-    state = state.model_copy(update = evaluator_review)
-
-    print("Evaluator Review : ", state.review_comments)
-    print("Evaluator score : ", state.review_passed)
 
 
 if __name__ == "__main__":
