@@ -1,8 +1,11 @@
+import logging
 import re
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+
+logger = logging.getLogger(__name__)
 
 
 def save_md_as_pdf(markdown: str, output_path: str) -> str:
@@ -15,6 +18,7 @@ def save_md_as_pdf(markdown: str, output_path: str) -> str:
     Returns:
         The output_path the PDF was written to.
     """
+    logger.info("Converting markdown to PDF: %d words -> %s", len(markdown.split()), output_path)
     doc = SimpleDocTemplate(output_path, pagesize=A4)
     styles = getSampleStyleSheet()
     story = []
@@ -34,6 +38,7 @@ def save_md_as_pdf(markdown: str, output_path: str) -> str:
             story.append(Paragraph(_inline_format(line), styles["Normal"]))
 
     doc.build(story)
+    logger.info("PDF conversion complete: %s", output_path)
     return output_path
 
 

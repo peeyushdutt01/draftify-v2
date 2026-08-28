@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -10,8 +11,10 @@ from prompts.planner import PLANNER_PROMPT
 load_dotenv()
 
 PLANNER_MODEL = os.getenv("PLANNER_MODEL")
+logger = logging.getLogger(__name__)
 
 def planner(state:State):
+    logger.info("Building plan for request")
     planner_llm = get_llm(
         model = PLANNER_MODEL,
         temperature = 0.8
@@ -22,6 +25,7 @@ def planner(state:State):
     ]
 
     plan = planner_llm.invoke(messages)
+    logger.info("Plan created: %d sections, %d search queries", len(plan.sections), len(plan.search_queries))
     # state.plan = plan  #for testing
     return {
         "plan" : plan,

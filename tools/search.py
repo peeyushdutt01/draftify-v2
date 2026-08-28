@@ -1,3 +1,4 @@
+import logging
 import os
 
 import arxiv
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 from helpers.state import SearchProvider, SearchResponse, SearchResult, SearchSource
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 async def search(
     queries: list[str],
@@ -15,29 +17,31 @@ async def search(
 ) -> SearchResponse:
 
     results: list[SearchResult] = []
+    logger.info("Starting search: queries=%d sources=%s", len(queries), sources)
 
     for query in queries:
 
         if SearchSource.WEB in sources:
-            results.extend(
-                _search_web(query)
-            )
+            found = _search_web(query)
+            results.extend(found)
+            logger.info("Web search '%s': %d results", query, len(found))
 
         if SearchSource.NEWS in sources:
-            results.extend(
-                _search_news(query)
-            )
+            found = _search_news(query)
+            results.extend(found)
+            logger.info("News search '%s': %d results", query, len(found))
 
         if SearchSource.RESEARCH in sources:
-            results.extend(
-                _search_research(query)
-            )
+            found = _search_research(query)
+            results.extend(found)
+            logger.info("Research search '%s': %d results", query, len(found))
 
         if SearchSource.SOCIAL in sources:
-            results.extend(
-                _search_social(query)
-            )
+            found = _search_social(query)
+            results.extend(found)
+            logger.info("Social search '%s': %d results", query, len(found))
 
+    logger.info("Search complete: %d total results", len(results))
     return SearchResponse(results=results)
 
 
@@ -109,8 +113,8 @@ def _search_research(query: str) -> list[SearchResult]:
             )
 
         return results
-    except Exception:  # noqa: BLE001
-        print("Arxiv Search Fail : ",Exception)
+    except Exception:
+        logger.exception("Arxiv search failed for '%s'", query)
         return results
 
 def _search_social(query:str)->list[SearchResult]:
@@ -136,6 +140,6 @@ def _search_social(query:str)->list[SearchResult]:
 
         return results
 
-    except Exception:  # noqa: BLE001
-        print("Reddit Search Fail : ",Exception)
+    except Exception:
+        logger.exception("Reddit search failed for '%s'", query)
         return results

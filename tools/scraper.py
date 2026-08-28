@@ -16,11 +16,13 @@ async def scrape(result: SearchResult)->Article | None:
     could be extracted.
     """
     try:    
+        logger.info("Scraping %s", result.url)
         html = await _fetch_html(str(result.url))
 
         content = _content_extractor(html)
 
         if not content:
+            logger.warning("No readable content extracted from %s", result.url)
             return None
 
         return Article(
@@ -44,12 +46,14 @@ async def scrape_many(results: list[SearchResult]) -> list[Article]:
     ]
 
     articles = await asyncio.gather(*tasks)
+    logger.info("Scraping complete: %d succeeded, %d failed", sum(article is not None for article in articles), sum(article is None for article in articles))
 
     return [article 
             for article in articles 
             if article is not None]
 
 async def _fetch_html(url:str) -> str:
+    logger.info("Fetching HTML: %s", url)
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
 
@@ -65,7 +69,9 @@ async def _fetch_html(url:str) -> str:
             )
             await page.wait_for_timeout(1500)
 
-            return await page.content()
+            html = await page.content()
+            logger.info("Fetched HTML: %s (%d bytes)", url, len(html))
+            return html
         finally:
             await browser.close()
 

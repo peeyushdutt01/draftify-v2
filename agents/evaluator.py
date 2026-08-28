@@ -1,23 +1,27 @@
-from helpers.state import State, Plan
-from helpers.llm import get_llm
+import logging
 import os
+
 from dotenv import load_dotenv
-from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel
+
+from helpers.llm import get_llm
+from helpers.state import Plan, State
 from prompts.evaluator import EVALUATOR_PROMPT
 
-
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 class EvaluationResult(BaseModel):
     review_comments : list[str]
     score : int
 
 async def evaluator(state:State):
+    logger.info("Evaluating draft (%d words)", len(state.draft_article.split()))
     evaluation = await _evaluate_content(
         plan = state.plan, 
         content = state.draft_article)
-    print("Score : ", evaluation.score)
+    logger.info("Evaluation complete: score=%d comments=%d", evaluation.score, len(evaluation.review_comments))
 
     return {
         "review_comments" : evaluation.review_comments,

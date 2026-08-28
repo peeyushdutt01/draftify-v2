@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import re
 
@@ -12,6 +13,7 @@ _EMBEDDING_MODEL = os.getenv("RERANKER_EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5
 
 _cross_encoder: CrossEncoder | None = None
 _embedder: SentenceTransformer | None = None
+logger = logging.getLogger(__name__)
 
 
 def _get_cross_encoder() -> CrossEncoder:
@@ -27,13 +29,16 @@ def _get_embedder() -> SentenceTransformer:
     return _embedder
 
 async def reranker(state: State):
+    logger.info("Chunking %d scraped articles", len(state.scraped_articles))
 
     chunks = _chunk_articles(state.scraped_articles)
+    logger.info("Created %d chunks", len(chunks))
 
     selected = await _select_chunks(
         state.user_request,
         chunks,
     )
+    logger.info("Selected %d ranked chunks", len(selected))
 
     return {
         "ranked_articles": selected,

@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -11,8 +12,10 @@ from tools.scraper import scrape_many
 from tools.search import search
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 async def researcher(state: State):
+    logger.info("Generating search requests")
 
     search_llm = (
         get_llm(
@@ -28,22 +31,23 @@ async def researcher(state: State):
             HumanMessage(content=state.user_request),
         ]
     )
+    logger.info("Searching %d queries across sources=%s", len(search_request.query), search_request.sources)
 
     search_response = await search(
         queries=search_request.query,
         sources=search_request.sources,
     )
 
-    print(f"[funnel] raw search results: {len(search_response.results)}")
+    logger.info("Raw search results: %d", len(search_response.results))
 
     deduped = dedupe_results(search_response.results)
-    print(f"[funnel] after dedupe: {len(deduped)}")
+    logger.info("After dedupe: %d", len(deduped))
 
     selected = rrf_merge(deduped)
-    print(f"[funnel] after RRF: {len(selected)}")
+    logger.info("After RRF selection: %d", len(selected))
 
     articles = await scrape_many(selected)
-    print(f"[funnel] scraped articles: {len(articles)}")
+    logger.info("Scraped articles: %d", len(articles))
 
     return {
         "search_request": search_request,

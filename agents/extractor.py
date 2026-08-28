@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from helpers.state import Chunk, ExtractedFact, Fact, Plan, State
 from prompts.extractor import EXTRACTOR_PROMPT
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 _MAX_CONCURRENT_CALLS = 3 
 
@@ -24,8 +26,10 @@ class BatchFacts(BaseModel):
 
 
 async def extractor(state: State):
+    logger.info("Extracting facts from %d ranked chunks", len(state.ranked_articles))
     facts = await _extract_facts(state.plan, state.ranked_articles)
 
+    logger.info("Fact extraction complete: %d facts", len(facts))
     return {
         "research_facts": facts,
         "current_step": "extraction_completed",

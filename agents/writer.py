@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -8,6 +9,7 @@ from helpers.state import Fact, State
 from prompts.writer import WRITER_PROMPT
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 
 async def writer(state: State):
@@ -15,9 +17,11 @@ async def writer(state: State):
     facts_by_section = _group_facts_by_section(state.research_facts, plan.sections)
 
     draft_parts: list[str] = []
+    logger.info("Writing %d sections", len(plan.sections))
 
     for section in plan.sections:
         section_facts = facts_by_section.get(section, [])
+        logger.info("Writing section '%s' with %d facts", section, len(section_facts))
         section_text = await _write_section(
             topic=plan.topic,
             audience=plan.audience,
